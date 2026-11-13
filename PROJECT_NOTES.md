@@ -259,6 +259,14 @@ Hero image prompts used the built-in image-generation workflow with one shared a
 - Root cause: the intentionally full-bleed swipe rail contributed an oversized intrinsic width to the one-column Reviews grid; the section's hidden overflow masked it from page-level overflow checks.
 - The mobile Reviews grid now uses `minmax(0, 1fr)` and explicitly allows its content and proof columns to shrink within the viewport. The swipe rail remains full-bleed and horizontally scrollable.
 
+## cPanel production deployment
+
+- Added `npm run build`, implemented by `scripts/build.mjs`, to create a clean static production package in `out/`.
+- The build copies only runtime HTML, CSS, JavaScript, optimized JPG assets, the transparent logo and required SVG icons. Source PNGs, QA screenshots and project notes are excluded from production output.
+- Added a root `.cpanel.yml` that copies only `out/.` to `/home/vandbnai/public_html/`, matching the cPanel account path shown by the client.
+- `out/` is committed intentionally because cPanel Git deployment executes copy tasks and should not depend on Node being installed on the hosting account.
+- Deployment workflow: run `npm run build`, commit the updated source and `out/`, push to `main`, click `Update from Remote`, then click `Deploy HEAD Commit` in cPanel.
+
 ## Next task after client approval
 
 Build the Gallery section only. Do not build Contact or Footer in the same approval round.

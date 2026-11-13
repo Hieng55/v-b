@@ -1,0 +1,6 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/vandbnai/public_html/
+    - /bin/mkdir -p $DEPLOYPATH
+    - /bin/cp -R out/. $DEPLOYPATH
