@@ -22,6 +22,7 @@ const publicFiles = [
   "images/hero-champagne-manicure.jpg",
   "images/hero-manicure-ritual.jpg",
   "images/hero-pearl-nail-art.jpg",
+  "images/gallery",
   "images/icons/facebook.svg",
   "images/icons/google-maps.svg",
   "images/icons/instagram.svg"
@@ -37,7 +38,7 @@ for (const relativePath of publicFiles) {
   const sourcePath = resolve(projectRoot, relativePath);
   const destinationPath = resolve(outputDirectory, relativePath);
   await mkdir(dirname(destinationPath), { recursive: true });
-  await cp(sourcePath, destinationPath);
+  await cp(sourcePath, destinationPath, { recursive: true });
 }
 
 console.log(`Built ${publicFiles.length} production files in ${outputDirectory}`);

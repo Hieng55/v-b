@@ -246,3 +246,96 @@ class ServiceTabs {
 document.querySelectorAll("[data-service-tabs]").forEach((tabs) => {
   new ServiceTabs(tabs);
 });
+
+class GalleryLightbox {
+  constructor(root) {
+    this.root = root;
+    this.items = [...root.querySelectorAll("[data-gallery-item]")];
+    this.lightbox = root.querySelector("[data-gallery-lightbox]");
+    this.fullImage = root.querySelector("[data-gallery-full-image]");
+    this.caption = root.querySelector("[data-gallery-caption]");
+    this.closeButtons = [...root.querySelectorAll("[data-gallery-close]")];
+    this.previousButton = root.querySelector("[data-gallery-previous]");
+    this.nextButton = root.querySelector("[data-gallery-next]");
+    this.currentIndex = 0;
+    this.lastFocusedItem = null;
+    this.touchStartX = 0;
+
+    if (!this.items.length || !this.lightbox || !this.fullImage) return;
+    this.bindEvents();
+  }
+
+  show(index) {
+    this.currentIndex = (index + this.items.length) % this.items.length;
+    const thumbnail = this.items[this.currentIndex].querySelector("img");
+
+    this.fullImage.src = thumbnail.currentSrc || thumbnail.src;
+    this.fullImage.alt = thumbnail.alt;
+    if (this.caption) this.caption.textContent = `${this.currentIndex + 1} / ${this.items.length}`;
+  }
+
+  open(index, trigger) {
+    this.lastFocusedItem = trigger;
+    this.show(index);
+    this.lightbox.hidden = false;
+    this.lightbox.setAttribute("aria-hidden", "false");
+    document.body.classList.add("lightbox-open");
+    window.requestAnimationFrame(() => {
+      this.lightbox.classList.add("is-open");
+      this.lightbox.querySelector(".gallery-lightbox__close")?.focus();
+    });
+  }
+
+  close() {
+    this.lightbox.classList.remove("is-open");
+    this.lightbox.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("lightbox-open");
+    window.setTimeout(() => {
+      this.lightbox.hidden = true;
+      this.fullImage.removeAttribute("src");
+    }, 180);
+    this.lastFocusedItem?.focus();
+  }
+
+  bindEvents() {
+    this.items.forEach((item, index) => {
+      item.addEventListener("click", () => this.open(index, item));
+    });
+
+    this.closeButtons.forEach((button) => button.addEventListener("click", () => this.close()));
+    this.previousButton?.addEventListener("click", () => this.show(this.currentIndex - 1));
+    this.nextButton?.addEventListener("click", () => this.show(this.currentIndex + 1));
+
+    this.lightbox.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") this.close();
+      if (event.key === "ArrowLeft") this.show(this.currentIndex - 1);
+      if (event.key === "ArrowRight") this.show(this.currentIndex + 1);
+
+      if (event.key === "Tab") {
+        const controls = [...this.lightbox.querySelectorAll("button:not([tabindex='-1'])")];
+        const firstControl = controls[0];
+        const lastControl = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === firstControl) {
+          event.preventDefault();
+          lastControl.focus();
+        } else if (!event.shiftKey && document.activeElement === lastControl) {
+          event.preventDefault();
+          firstControl.focus();
+        }
+      }
+    });
+
+    this.lightbox.addEventListener("touchstart", (event) => {
+      this.touchStartX = event.changedTouches[0].clientX;
+    }, { passive: true });
+
+    this.lightbox.addEventListener("touchend", (event) => {
+      const distance = event.changedTouches[0].clientX - this.touchStartX;
+      if (Math.abs(distance) > 50) this.show(this.currentIndex + (distance < 0 ? 1 : -1));
+    }, { passive: true });
+  }
+}
+
+document.querySelectorAll("[data-gallery]").forEach((gallery) => {
+  new GalleryLightbox(gallery);
+});
